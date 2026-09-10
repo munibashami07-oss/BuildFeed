@@ -1,0 +1,35 @@
+import uuid
+from datetime import datetime, timezone
+from sqlalchemy import Column, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from app.core.database import Base
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
+
+
+class UserAchievement(Base):
+    """One row per achievement unlocked by a user.
+
+    achievement_id is a slug from the achievement catalog (e.g. 'first_step').
+    Uniqueness is enforced at DB level — duplicate awards are impossible.
+    """
+    __tablename__ = "user_achievements"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    achievement_id = Column(String(100), nullable=False, index=True)
+    unlocked_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    user = relationship("User", backref="achievements")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "achievement_id", name="uq_user_achievement"),
+    )
