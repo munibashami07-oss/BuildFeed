@@ -2,5 +2,10 @@ backend/.env
 .env
 *.env
 backend/tests/
-backend/.env
-.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+node_modules/
+

@@ -32,6 +32,7 @@ origins = settings.get_cors_origins()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=getattr(settings, "CORS_ORIGIN_REGEX", r"^https?://(localhost|127\.0\.0\.1|.*\.netlify\.app|.*\.up\.railway\.app)(:\d+)?$"),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -8,7 +8,15 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "build_super_secret_jwt_key_2026_change_in_production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
-    CORS_ORIGINS: Union[List[str], str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    CORS_ORIGINS: Union[List[str], str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://buildfeeds.netlify.app",
+        "https://buildfeed.netlify.app",
+    ]
+    CORS_ORIGIN_REGEX: str = r"^https?://(localhost|127\.0\.0\.1|.*\.netlify\.app|.*\.up\.railway\.app)(:\d+)?$"
     APP_ENV: str = "development"
     TESTING: bool = False
 
@@ -42,7 +50,7 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
     SMTP_FROM_EMAIL: str = ""
     SMTP_FROM_NAME: str = "build."
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "https://buildfeeds.netlify.app"
 
     # GitHub OAuth (optional at signup — used when the user chooses GitHub for "Build This")
     GITHUB_CLIENT_ID: str = ""
@@ -88,10 +96,13 @@ class Settings(BaseSettings):
     def get_cors_origins(self) -> List[str]:
         if isinstance(self.CORS_ORIGINS, str):
             try:
-                return json.loads(self.CORS_ORIGINS)
+                parsed = json.loads(self.CORS_ORIGINS)
+                if isinstance(parsed, list):
+                    return parsed
+                return [str(parsed)]
             except Exception:
-                return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
-        return self.CORS_ORIGINS
+                return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+        return list(self.CORS_ORIGINS)
 
 
 settings = Settings()
