@@ -25,7 +25,6 @@ const DISCOVERY_NAV = [
   { id: 'article',     label: 'Articles', icon: <FileText size={16} /> },
   { id: 'github_repo', label: 'GitHub',   icon: <Github   size={16} /> },
   { id: 'youtube',     label: 'YouTube',  icon: <Youtube  size={16} /> },
-  { id: 'video',       label: 'Videos',   icon: <Video    size={16} /> },
 ];
 
 const PERSONAL_NAV = [
