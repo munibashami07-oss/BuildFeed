@@ -28,6 +28,27 @@ BuildFeed breaks that loop:
 
 ---
 
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="20%"><img src="docs/screenshots/feed.png" alt="Personalized For You feed" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/search.png" alt="Hybrid search results" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/project.png" alt="Completed project with objective and tech stack" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/milestones.png" alt="Project milestones with step tracking" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/progression.png" alt="XP, level and badges" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>🎯 For You feed</b></td>
+    <td align="center"><b>🔎 Search</b></td>
+    <td align="center"><b>🛠️ Project</b></td>
+    <td align="center"><b>✅ Milestones</b></td>
+    <td align="center"><b>🏅 Progression</b></td>
+  </tr>
+</table>
+
+---
+
 ## 🔁 The core loop
 
 ```mermaid
@@ -97,6 +118,26 @@ flowchart TD
 
 Items below a minimum topic and expertise threshold are removed before composite scoring.
 
+> ⚠️ **What these numbers are:** the weights are **design choices** for how BuildFeed prioritizes relevance, not measured outcomes or the result of an experiment.
+
+#### 🧮 Worked example (illustrative values)
+
+The values below are **made up for illustration**. Each signal is scaled 0 to 1, multiplied by its weight, and summed to a score out of 100.
+
+| Signal (weight) | 📘 Item A: FastAPI auth tutorial | 🧬 Item B: general ML paper | 🧪 Item C: loosely related video |
+|---|---|---|---|
+| Topic relevance (40) | 0.9 → **36.0** | 0.6 → **24.0** | 0.3 → **12.0** |
+| Expertise match (25) | 1.0 → **25.0** | 0.4 → **10.0** | 0.4 → **10.0** |
+| Gate: topic + expertise ≥ 25? | 61.0 ✅ pass | 34.0 ✅ pass | 22.0 ❌ removed |
+| Semantic similarity (15) | 0.7 → **10.5** | 0.9 → **13.5** | 0.9 → *(not scored)* |
+| Behavioral signals (10) | 0.4 → **4.0** | 0.8 → **8.0** | *(not scored)* |
+| Quality / freshness / goals (10) | 0.8 → **8.0** | 0.9 → **9.0** | *(not scored)* |
+| **Total** | **83.5** | **64.5** | **excluded** |
+
+**Why A ranks above B:** A matches the user's interests and level much better, and those two signals carry 65% of the weight. B scores higher on semantic similarity and behavior, but not enough to make up the gap.
+
+**Why C never shows up:** despite strong semantic similarity, it fails the topic and expertise gate, so it is removed before composite scoring. This is how the feed stays on-topic.
+
 ### 📡 Content sources
 
 | Source | What is discovered |
@@ -122,6 +163,24 @@ Items below a minimum topic and expertise threshold are removed before composite
 
 ### 🏗️ Architecture
 
+The big picture:
+
+```mermaid
+flowchart TB
+    FE["🖥️ <b>React + TypeScript</b><br/>Feed · Search · Projects · Portfolio"]
+    BE["⚙️ <b>FastAPI backend</b><br/>Authentication · API · Business logic"]
+    DB[("🗄️ <b>PostgreSQL</b><br/>Application data")]
+    AI["🤖 <b>Gemini AI</b><br/>Analysis · Embeddings · Mentor"]
+    FE --> BE
+    BE --> DB
+    BE --> AI
+```
+
+> This is a conceptual diagram based on the documented stack, not a verified map of every runtime connection.
+
+<details>
+<summary>📁 Repository layout</summary>
+
 ```text
 BuildFeed/
 ├── backend/
@@ -144,6 +203,8 @@ BuildFeed/
         ├── services/api/# One Axios module per API domain
         └── types/       # Shared TypeScript interfaces
 ```
+
+</details>
 
 ---
 
@@ -261,30 +322,50 @@ All endpoints live under `/api/v1`. Full interactive docs are at `/docs`.
 
 ```bash
 cd backend
-pytest                              # run all tests
-pytest tests/test_feed_scoring.py -v  # run one file
+pytest -v                       # run all backend tests
+pytest tests/<test_file>.py -v  # run a single test file
 ```
 
-The backend suite covers auth, feed scoring, discovery, embeddings and search, projects, the focus gate, URL import, the feedback loop, and security (SSRF, rate limiting).
+Backend tests live in `backend/tests/` and are written with `pytest`. Run the suite locally and check the results yourself before relying on any behavior described in this README.
 
 **Known limitations**
 - 🚫 The frontend has no automated tests.
 - 📉 Backend coverage percentage is not tracked in CI.
 - 📄 There is no `.env.example` yet, so `.env` must be created by hand.
+- 📊 Feed-scoring weights are design choices and have not been validated against user outcomes.
+- 🔌 AI features depend on external APIs (Gemini, and optionally YouTube and GitHub), so they are subject to those services' limits and availability.
 
 ---
 
 ## 🛡️ Security
 
-- 🔑 Secrets live in `.env` files listed in `.gitignore`
-- 🔐 GitHub tokens are encrypted at rest (Fernet)
-- 🎫 JWTs expire after 24 hours (configurable)
-- 🧂 Passwords are hashed with bcrypt
-- 🌐 URL import blocks private and localhost addresses (SSRF) and respects `robots.txt`
-- 🚦 Login and password-reset endpoints are rate limited
-- 🧱 SQL goes through SQLAlchemy with parameterized queries
+These are the project's security practices and design goals. This is a personal project and has not had an independent security audit, so review the code before deploying it anywhere that matters.
+
+- 🔑 Secrets belong in `.env` files, which are listed in `.gitignore`
+- 🔐 Stored GitHub tokens are intended to be encrypted with Fernet (`GITHUB_TOKEN_ENCRYPTION_KEY`)
+- 🎫 Authentication uses JWTs with a configurable expiry
+- 🧂 Passwords are hashed with bcrypt via passlib
+- 🌐 URL import is designed to reject private and localhost addresses (SSRF) and to respect `robots.txt`
+- 🚦 Login and password-reset endpoints are designed to be rate limited
+- 🧱 Database access goes through SQLAlchemy ORM queries
 
 For sensitive security issues, please don't post publicly.
+
+---
+
+## 🗺️ Roadmap
+
+> Proposed next steps, based on the current limitations. Not commitments.
+
+| Status | Item |
+|---|---|
+| ✅ Built | Personalized feed, AI analysis, hybrid search, focus gate, project workspaces, XP, portfolio |
+| 🔜 Next | Add `.env.example` and a one-command local setup |
+| 🔜 Next | Add frontend tests and track backend coverage in CI |
+| 🔜 Next | Add a short demo GIF, plus desktop and focus-gate screenshots |
+| 💭 Later | Validate feed-scoring weights against real user feedback ("Too Basic" / "Too Advanced" signals) |
+| 💭 Later | Add more content sources and per-source tuning |
+| 💭 Later | Improve observability for the discovery pipeline |
 
 ---
 
