@@ -32,11 +32,11 @@ BuildFeed breaks that loop:
 
 <table>
   <tr>
-    <td align="center" width="20%"><img src="docs/screenshots/feed.png" alt="Personalized For You feed" width="100%"></td>
-    <td align="center" width="20%"><img src="docs/screenshots/search.png" alt="Hybrid search results" width="100%"></td>
-    <td align="center" width="20%"><img src="docs/screenshots/project.png" alt="Completed project with objective and tech stack" width="100%"></td>
-    <td align="center" width="20%"><img src="docs/screenshots/milestones.png" alt="Project milestones with step tracking" width="100%"></td>
-    <td align="center" width="20%"><img src="docs/screenshots/progression.png" alt="XP, level and badges" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/feed.jpeg" alt="Personalized For You feed" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/search.jpeg" alt="Hybrid search results" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/project.jpeg" alt="Completed project with objective and tech stack" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/milestones.jpeg" alt="Project milestones with step tracking" width="100%"></td>
+    <td align="center" width="20%"><img src="docs/screenshots/progression.jpeg" alt="XP, level and badges" width="100%"></td>
   </tr>
   <tr>
     <td align="center"><b>🎯 For You feed</b></td>
